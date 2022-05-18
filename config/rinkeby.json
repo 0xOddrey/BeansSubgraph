@@ -1,0 +1,15 @@
+{
+  "network": "rinkeby",
+  "beansToken": {
+    "address": "0x7e538d5FBe26ABd5E2060b76e840dC3FAfDE6B02",
+    "startBlock": 10573408
+  },
+  "beansAuctionHouse": {
+    "address": "0x85Dd3F2F873B14840a5068a9a1139c6FF0b6B2c2",
+    "startBlock": 10573411
+  },
+  "beansDAO": {
+    "address": "0xC67cA2636663AaD0EcB41679680E3CbF484b14Da",
+    "startBlock": 10573414
+  }
+}

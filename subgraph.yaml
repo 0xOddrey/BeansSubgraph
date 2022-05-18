@@ -1,0 +1,99 @@
+specVersion: 0.0.5
+description: >-
+  Randomly generated avatar NFTs auctioned daily.
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: BeansAuctionHouse
+    network: rinkeby
+    source:
+      address: '0x85Dd3F2F873B14840a5068a9a1139c6FF0b6B2c2'
+      abi: BeansAuctionHouse
+      startBlock: 10573411
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      file: ./src/beans-auction-house.ts
+      entities:
+        - Account
+        - Auction
+        - Bid
+        - Bean
+      abis:
+        - name: BeansAuctionHouse
+          file: ./contracts/BeansAuctionHouse.sol/BeansAuctionHouse.json
+      eventHandlers:
+        - event: AuctionCreated(indexed uint256,uint256,uint256)
+          handler: handleAuctionCreated
+        - event: AuctionBid(indexed uint256,address,uint256,bool)
+          handler: handleAuctionBid
+        - event: AuctionExtended(indexed uint256,uint256)
+          handler: handleAuctionExtended
+        - event: AuctionSettled(indexed uint256,address,uint256)
+          handler: handleAuctionSettled
+  - kind: ethereum/contract
+    name: BeansToken
+    network: rinkeby
+    source:
+      address: '0x7e538d5FBe26ABd5E2060b76e840dC3FAfDE6B02'
+      abi: BeansToken
+      startBlock: 10573408
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      file: ./src/beans-erc-721.ts
+      entities:
+        - Bean
+        - Seed
+        - Account
+        - Delegate
+        - Governance
+      abis:
+        - name: BeansToken
+          file: ./contracts/BeansToken.sol/BeansToken.json
+      eventHandlers:
+        - event: BeanCreated(indexed uint256,string)
+          handler: handleBeanCreated
+        - event: DelegateChanged(indexed address,indexed address,indexed address)
+          handler: handleDelegateChanged
+        - event: DelegateVotesChanged(indexed address,uint256,uint256)
+          handler: handleDelegateVotesChanged
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+  - kind: ethereum/contract
+    name: BeansDAO
+    network: rinkeby
+    source:
+      address: '0xC67cA2636663AaD0EcB41679680E3CbF484b14Da'
+      abi: BeansDAO
+      startBlock: 10573414
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      file: ./src/beans-dao.ts
+      entities:
+        - Account
+        - Delegate
+        - Proposal
+        - Vote
+        - Governance
+      abis:
+        - name: BeansDAO
+          file: ./contracts/BeansDAOLogicV1.sol/BeansDAOLogicV1.json
+      eventHandlers:
+        - event: ProposalCreatedWithRequirements(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,uint256,uint256,string)
+          handler: handleProposalCreatedWithRequirements
+        - event: ProposalCanceled(uint256)
+          handler: handleProposalCanceled
+        - event: ProposalVetoed(uint256)
+          handler: handleProposalVetoed
+        - event: ProposalQueued(uint256,uint256)
+          handler: handleProposalQueued
+        - event: ProposalExecuted(uint256)
+          handler: handleProposalExecuted
+        - event: VoteCast(indexed address,uint256,uint8,uint256,string)
+          handler: handleVoteCast
