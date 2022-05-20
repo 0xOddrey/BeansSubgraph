@@ -17,14 +17,38 @@ dataSources:
       language: wasm/assemblyscript
       file: ./src/beans-auction-house.ts
       entities:
-        - AuctionCreated
+          - AuctionBid
+          - AuctionCreated
+          - AuctionExtended
+          - AuctionMinBidIncrementPercentageUpdated
+          - AuctionReservePriceUpdated
+          - AuctionSettled
+          - AuctionTimeBufferUpdated
+          - Paused
+          - Unpaused
       abis:
         - name: BeansAuctionHouse
           file: ./contracts/BeansAuctionHouse.sol/BeansAuctionHouse.json
       eventHandlers:
-        - event: AuctionCreated(indexed uint256,uint256,uint256)
-          handler: handleAuctionCreated
-  - kind: ethereum/contract
+          - event: AuctionBid(indexed uint256,address,uint256,bool)
+            handler: handleAuctionBid
+          - event: AuctionCreated(indexed uint256,uint256,uint256)
+            handler: handleAuctionCreated
+          - event: AuctionExtended(indexed uint256,uint256)
+            handler: handleAuctionExtended
+          - event: AuctionMinBidIncrementPercentageUpdated(uint256)
+            handler: handleAuctionMinBidIncrementPercentageUpdated
+          - event: AuctionReservePriceUpdated(uint256)
+            handler: handleAuctionReservePriceUpdated
+          - event: AuctionSettled(indexed uint256,address,uint256)
+            handler: handleAuctionSettled
+          - event: AuctionTimeBufferUpdated(uint256)
+            handler: handleAuctionTimeBufferUpdated
+          - event: Paused(address)
+            handler: handlePaused
+          - event: Unpaused(address)
+            handler: handleUnpaused
+  - kind: ethereum
     name: BeansToken
     network: {{network}}
     source:
@@ -37,10 +61,116 @@ dataSources:
       language: wasm/assemblyscript
       file: ./src/beans-erc-721.ts
       entities:
+        - Approval
+        - ApprovalForAll
+        - BeanBurned
         - BeanCreated
+        - BeanteamDAOUpdated
+        - DelegateChanged
+        - Delegate
+        - DelegateVotesChanged
+        - DescriptorLocked
+        - DescriptorUpdated
+        - Governance
+        - MinterLocked
+        - MinterUpdated
+        - OgBeanMinted
+        - SeederLocked
+        - SeederUpdated
+        - Transfer
       abis:
         - name: BeansToken
           file: ./contracts/BeansToken.sol/BeansToken.json
       eventHandlers:
+        - event: Approval(indexed address,indexed address,indexed uint256)
+          handler: handleApproval
+        - event: ApprovalForAll(indexed address,indexed address,bool)
+          handler: handleApprovalForAll
+        - event: BeanBurned(indexed uint256)
+          handler: handleBeanBurned
         - event: BeanCreated(indexed uint256,string)
           handler: handleBeanCreated
+        - event: DelegateChanged(indexed address,indexed address,indexed address)
+          handler: handleDelegateChanged
+        - event: BeanteamDAOUpdated(address)
+          handler: handleBeanteamDAOUpdated
+        - event: DelegateVotesChanged(indexed address,uint256,uint256)
+          handler: handleDelegateVotesChanged
+        - event: DescriptorLocked()
+          handler: handleDescriptorLocked
+        - event: DescriptorUpdated(address)
+          handler: handleDescriptorUpdated
+        - event: MinterLocked()
+          handler: handleMinterLocked
+        - event: MinterUpdated(address)
+          handler: handleMinterUpdated
+        - event: OgBeanMinted(indexed uint256,address)
+          handler: handleOgBeanMinted
+        - event: SeederLocked()
+          handler: handleSeederLocked
+        - event: SeederUpdated(address)
+          handler: handleSeederUpdated
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+  - kind: ethereum
+    name: BeansDAOLogicV1
+    network: {{network}}
+    source:
+      address: '{{beansDAO.address}}'
+      abi: BeansDAOLogicV1
+      startBlock: {{beansDAO.startBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      file: ./src/beans-dao.ts
+      entities:
+        - NewAdmin
+        - NewImplementation
+        - NewPendingAdmin
+        - NewVetoer
+        - ProposalCanceled
+        - ProposalExecuted
+        - ProposalQueued
+        - ProposalThresholdBPSSet
+        - ProposalVetoed
+        - QuorumVotesBPSSet
+        - VoteCast
+        - VotingDelaySet
+        - VotingPeriodSet
+      abis:
+        - name: BeansDAOLogicV1
+          file: ./contracts/BeansDAOLogicV1.sol/BeansDAOLogicV1.json
+      eventHandlers:
+        - event: NewAdmin(address,address)
+          handler: handleNewAdmin
+        - event: ProposalCreatedWithRequirements(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,uint256,uint256,string)
+          handler: handleProposalCreatedWithRequirements
+        - event: NewImplementation(address,address)
+          handler: handleNewImplementation
+        - event: NewPendingAdmin(address,address)
+          handler: handleNewPendingAdmin
+        - event: NewVetoer(address,address)
+          handler: handleNewVetoer
+        - event: ProposalCanceled(uint256)
+          handler: handleProposalCanceled
+        - event: ProposalExecuted(uint256)
+          handler: handleProposalExecuted
+        - event: ProposalQueued(uint256,uint256)
+          handler: handleProposalQueued
+        - event: ProposalThresholdBPSSet(uint256,uint256)
+          handler: handleProposalThresholdBPSSet
+        - event: ProposalVetoed(uint256)
+          handler: handleProposalVetoed
+        - event: QuorumVotesBPSSet(uint256,uint256)
+          handler: handleQuorumVotesBPSSet
+        - event: VoteCast(indexed address,uint256,uint8,uint256,string)
+          handler: handleVoteCast
+        - event: VotingDelaySet(uint256,uint256)
+          handler: handleVotingDelaySet
+        - event: VotingPeriodSet(uint256,uint256)
+          handler: handleVotingPeriodSet
+
+
+  
+

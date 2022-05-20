@@ -1,9 +1,235 @@
+type Approval @entity {
+  id: ID!
+  owner: Bytes! # address
+  approved: Bytes! # address
+  tokenId: BigInt! # uint256
+}
+
+type ApprovalForAll @entity {
+  id: ID!
+  owner: Bytes! # address
+  operator: Bytes! # address
+  approved: Boolean! # bool
+}
+
+type BeanBurned @entity {
+  id: ID!
+  tokenId: BigInt! # uint256
+}
+
 type BeanCreated @entity {
   id: ID!
   tokenId: BigInt! # uint256
   typeRef: String! # string
+  
+  "The owner of the Noun"
+  owner: Account!
+
+  "Historical votes for the Noun"
+  votes: [Vote!]! @derivedFrom(field: "nouns")
 }
 
+
+type Account @entity {
+  "An Account is any address that holds any amount of Nouns, the id used is the blockchain address."
+  id: ID!
+
+  "Delegate address of the token holder which will participate in votings. Delegates don't need to hold any tokens and can even be the token holder itself."
+  delegate: Delegate
+
+  "Noun balance of this address expressed in the smallest unit of the Nouns ERC721 Token"
+  tokenBalanceRaw: BigInt!
+
+  "Noun balance of this address expressed as a BigInt normalized value for the Nouns ERC721 Token"
+  tokenBalance: BigInt!
+
+  "Total amount of Nouns ever held by this address expressed in the smallest unit of the Nouns ERC721 Token"
+  totalTokensHeldRaw: BigInt!
+
+  "Total amount of Nouns ever held by this address expressed as a BigInt normalized value for the Nouns ERC721 Token"
+  totalTokensHeld: BigInt!
+
+  "The Nouns owned by this account"
+  beans: [BeanCreated!]!
+}
+
+type BeanteamDAOUpdated @entity {
+  id: ID!
+  beanteamDAO: Bytes! # address
+}
+
+
+type Delegate @entity {
+  "A Delegate is any address that has been delegated with voting tokens by a token holder, id is the blockchain address of said delegate"
+  id: ID!
+
+  "Amount of votes delegated to this delegate to be used on proposal votings expressed in the smallest unit of the Nouns ERC721 Token"
+  delegatedVotesRaw: BigInt!
+
+  "Amount of votes delegated to this delegate to be used on proposal votings expressed as a BigInt normalized value for the Nouns ERC721 Token"
+  delegatedVotes: BigInt!
+
+  tokenHoldersRepresentedAmount: Int!
+
+  "Token holders that this delegate represents"
+  tokenHoldersRepresented: [Account!]! @derivedFrom(field: "delegate")
+
+  "Nouns that this delegate represents"
+  nounsRepresented: [BeanCreated!]!
+
+  "Votes that a delegate has made in different proposals"
+  votes: [Vote!]! @derivedFrom(field: "voter")
+
+  "Proposals that the delegate has created"
+  proposals: [Proposal!]! @derivedFrom(field: "proposer")
+}
+
+enum ProposalStatus {
+  PENDING
+  ACTIVE
+  CANCELLED
+  VETOED
+  QUEUED
+  EXECUTED
+}
+
+
+type Proposal @entity {
+  "Internal proposal ID, in this implementation it seems to be a autoincremental id"
+  id: ID!
+
+  "Delegate that proposed the change"
+  proposer: Delegate!
+
+  "Targets data for the change"
+  targets: [Bytes!]
+
+  "Values data for the change"
+  values: [BigInt!]
+
+  "Signature data for the change"
+  signatures: [String!]
+
+  "Call data for the change"
+  calldatas: [Bytes!]
+
+  "The proposal creation timestamp"
+  createdTimestamp: BigInt!
+
+  "Block number from where the voting starts"
+  startBlock: BigInt!
+
+  "Block number from where the voting ends"
+  endBlock: BigInt!
+
+  "The proposal threshold at the time of proposal creation"
+  proposalThreshold: BigInt!
+
+  "The required number of votes for quorum at the time of proposal creation"
+  quorumVotes: BigInt!
+
+  "String description of the change"
+  description: String!
+
+  "Status of the proposal"
+  status: ProposalStatus!
+
+  "Once the proposal is queued for execution it will have an ETA of the execution"
+  executionETA: BigInt
+
+  "Votes associated to this proposal"
+  votes: [Vote!]! @derivedFrom(field: "proposal")
+}
+
+type Vote @entity {
+  "Delegate ID + Proposal ID"
+  id: ID!
+
+  "Whether the vote is in favour of the proposal"
+  support: Boolean!
+
+  "The integer support value: against (0), for (1), or abstain (2)"
+  supportDetailed: Int!
+
+  "Amount of votes in favour or against expressed in the smallest unit of the Nouns ERC721 Token"
+  votesRaw: BigInt!
+
+  "Amount of votes in favour or against expressed as a BigInt normalized value for the Nouns ERC721 Token"
+  votes: BigInt!
+
+  "Delegate that emitted the vote"
+  voter: Delegate!
+
+  "The Nouns used to vote"
+  nouns: [BeanCreated!]
+
+  "Proposal that is being voted on"
+  proposal: Proposal!
+}
+
+
+type DelegateChanged @entity {
+  id: ID!
+  delegator: Bytes! # address
+  fromDelegate: Bytes! # address
+  toDelegate: Bytes! # address
+}
+
+type DelegateVotesChanged @entity {
+  id: ID!
+  delegate: Bytes! # address
+  previousBalance: BigInt! # uint256
+  newBalance: BigInt! # uint256
+}
+
+type DescriptorLocked @entity {
+  id: ID!
+}
+
+type DescriptorUpdated @entity {
+  id: ID!
+  descriptor: Bytes! # address
+}
+
+type MinterLocked @entity {
+  id: ID!
+}
+
+type MinterUpdated @entity {
+  id: ID!
+  minter: Bytes! # address
+}
+
+type OgBeanMinted @entity {
+  id: ID!
+  tokenId: BigInt! # uint256
+  ogBeanAddy: Bytes! # address
+}
+
+
+type SeederLocked @entity {
+  id: ID!
+}
+
+type SeederUpdated @entity {
+  id: ID!
+  seeder: Bytes! # address
+}
+
+type Transfer @entity {
+  id: ID!
+  from: Bytes! # address
+  to: Bytes! # address
+  tokenId: BigInt! # uint256
+}
+
+type AuctionBid @entity {
+  id: ID!
+  nounId: BigInt! # uint256
+  sender: Bytes! # address
+  value: BigInt! # uint256
+  extended: Boolean! # bool
+}
 
 type AuctionCreated @entity {
   id: ID!
@@ -12,3 +238,70 @@ type AuctionCreated @entity {
   endTime: BigInt! # uint256
 }
 
+type AuctionExtended @entity {
+  id: ID!
+  nounId: BigInt! # uint256
+  endTime: BigInt! # uint256
+}
+
+type AuctionMinBidIncrementPercentageUpdated @entity {
+  id: ID!
+  minBidIncrementPercentage: BigInt! # uint256
+}
+
+type AuctionReservePriceUpdated @entity {
+  id: ID!
+  reservePrice: BigInt! # uint256
+}
+
+type AuctionSettled @entity {
+  id: ID!
+  nounId: BigInt! # uint256
+  winner: Bytes! # address
+  amount: BigInt! # uint256
+}
+
+type AuctionTimeBufferUpdated @entity {
+  id: ID!
+  timeBuffer: BigInt! # uint256
+}
+
+
+type Paused @entity {
+  id: ID!
+  account: Bytes! # address
+}
+
+type Unpaused @entity {
+  id: ID!
+  account: Bytes! # address
+}
+
+type Governance @entity {
+  "Unique entity used to keep track of common aggregated data"
+  id: ID!
+
+  "Number of proposals created"
+  proposals: BigInt!
+
+  "Total number of token holders currently"
+  currentTokenHolders: BigInt!
+
+  "Total number of delegates participating on the governance currently"
+  currentDelegates: BigInt!
+
+  "Total number of token holders"
+  totalTokenHolders: BigInt!
+
+  "Total number of delegates that held delegated votes"
+  totalDelegates: BigInt!
+
+  "Total number of votes delegated expressed in the smallest unit of the Nouns ERC721 Token"
+  delegatedVotesRaw: BigInt!
+
+  "Total number of votes delegated expressed as a BigInt normalized value for the Nouns ERC721 Token"
+  delegatedVotes: BigInt!
+
+  "Number of proposals currently queued for execution"
+  proposalsQueued: BigInt!
+}

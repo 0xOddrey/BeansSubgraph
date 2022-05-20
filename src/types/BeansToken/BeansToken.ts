@@ -724,7 +724,9 @@ export class BeansToken extends ethereum.SmartContract {
       [ethereum.Value.fromUnsignedBigInt(beanId)]
     );
 
-    return result[0].toTuple() as BeansToken__getSeedResultValue0Struct;
+    return changetype<BeansToken__getSeedResultValue0Struct>(
+      result[0].toTuple()
+    );
   }
 
   try_getSeed(
@@ -740,7 +742,7 @@ export class BeansToken extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(
-      value[0].toTuple() as BeansToken__getSeedResultValue0Struct
+      changetype<BeansToken__getSeedResultValue0Struct>(value[0].toTuple())
     );
   }
 

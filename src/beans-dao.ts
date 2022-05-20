@@ -6,7 +6,7 @@ import {
   ProposalExecuted,
   VoteCast,
   ProposalVetoed,
-} from './types/BeansDAO/BeansDAO';
+} from './types/BeansDaoLogicV1/BeansDAOLogicV1';
 import {
   getOrCreateDelegate,
   getOrCreateProposal,
@@ -42,7 +42,6 @@ export function handleProposalCreatedWithRequirements(
   proposer = getOrCreateDelegate(event.params.proposer.toHexString());
 
   proposal.proposer = proposer.id;
-  proposal.targets = event.params.targets as Bytes[];
   proposal.values = event.params.values;
   proposal.signatures = event.params.signatures;
   proposal.calldatas = event.params.calldatas;
@@ -122,7 +121,7 @@ export function handleVoteCast(event: VoteCast): void {
   vote.votes = event.params.votes;
   vote.support = event.params.support == 1;
   vote.supportDetailed = event.params.support;
-  vote.beans = voter.beansRepresented;
+  vote.nouns = voter.nounsRepresented;
 
   vote.save();
 
