@@ -25,6 +25,8 @@ dataSources:
         - AuctionTimeBufferUpdated
         - Paused
         - Unpaused
+        - Bid
+        - Auction
       abis:
         - name: BeansAuctionHouse
           file: BeansAuctionHouse/contracts/BeansAuctionHouse.sol/BeansAuctionHouse.json
@@ -145,8 +147,6 @@ dataSources:
           handler: handleNewAdmin
         - event: ProposalCreatedWithRequirements(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,uint256,uint256,string)
           handler: handleProposalCreatedWithRequirements
-        - event: NewImplementation(address,address)
-          handler: handleNewImplementation
         - event: NewPendingAdmin(address,address)
           handler: handleNewPendingAdmin
         - event: NewVetoer(address,address)
@@ -157,15 +157,7 @@ dataSources:
           handler: handleProposalExecuted
         - event: ProposalQueued(uint256,uint256)
           handler: handleProposalQueued
-        - event: ProposalThresholdBPSSet(uint256,uint256)
-          handler: handleProposalThresholdBPSSet
         - event: ProposalVetoed(uint256)
           handler: handleProposalVetoed
-        - event: QuorumVotesBPSSet(uint256,uint256)
-          handler: handleQuorumVotesBPSSet
         - event: VoteCast(indexed address,uint256,uint8,uint256,string)
           handler: handleVoteCast
-        - event: VotingDelaySet(uint256,uint256)
-          handler: handleVotingDelaySet
-        - event: VotingPeriodSet(uint256,uint256)
-          handler: handleVotingPeriodSet

@@ -1,3 +1,4 @@
+import { BigInt, log } from '@graphprotocol/graph-ts';
 import {
   AuctionBid as AuctionBidEvent,
   AuctionCreated as AuctionCreatedEvent,
@@ -18,29 +19,59 @@ import {
   AuctionSettled,
   AuctionTimeBufferUpdated,
   Paused,
-  Unpaused
+  Auction,
+  Bid,
+  Unpaused,
+  BeanCreated
 } from "./types/schema"
-
+import { getGovernanceEntity, getOrCreateDelegate, getOrCreateAccount } from './utils/helpers';
+import { BIGINT_ONE, BIGINT_ZERO, ZERO_ADDRESS } from './utils/constants';
 
 export function handleAuctionCreated(event: AuctionCreatedEvent): void {
-  let entity = new AuctionCreated(
-    event.transaction.hash.toHex() + "-" + event.logIndex.toString()
-  )
-  entity.nounId = event.params.nounId
-  entity.startTime = event.params.startTime
-  entity.endTime = event.params.endTime
-  entity.save()
+  let beanId = event.params.nounId.toString();
+
+  let bean = BeanCreated.load(beanId);
+  if (bean == null) {
+
+    return;
+  }
+
+  let auction = new Auction(beanId);
+  auction.bean = bean.id;
+  auction.amount = BigInt.fromI32(0);
+  auction.startTime = event.params.startTime;
+  auction.endTime = event.params.endTime;
+  auction.settled = false;
+  auction.save();
+
+
 }
 
 export function handleAuctionBid(event: AuctionBidEvent): void {
-  let entity = new AuctionBid(
-    event.transaction.hash.toHex() + "-" + event.logIndex.toString()
-  )
-  entity.nounId = event.params.nounId
-  entity.sender = event.params.sender
-  entity.value = event.params.value
-  entity.extended = event.params.extended
-  entity.save()
+  let nounId = event.params.nounId.toString();
+  let bidderAddress = event.params.sender.toHex();
+
+  let bidder = getOrCreateAccount(bidderAddress);
+
+  let auction = Auction.load(nounId);
+  if (auction == null) {
+    return;
+  }
+
+  auction.amount = event.params.value;
+  auction.bidder = bidder.id;
+  auction.save();
+
+  // Save Bid
+  let bid = new Bid(event.transaction.hash.toHex());
+  bid.bidder = bidder.id;
+  bid.amount = auction.amount;
+  bid.bean = auction.bean;
+  bid.txIndex = event.transaction.index;
+  bid.blockNumber = event.block.number;
+  bid.blockTimestamp = event.block.timestamp;
+  bid.auction = auction.id;
+  bid.save();
 }
 
 export function handleAuctionExtended(event: AuctionExtendedEvent): void {
