@@ -67,6 +67,7 @@ dataSources:
         - ApprovalForAll
         - BeanBurned
         - BeanCreated
+        - Bean
         - BeanteamDAOUpdated
         - DelegateChanged
         - Delegate

@@ -22,7 +22,7 @@ import {
   Auction,
   Bid,
   Unpaused,
-  BeanCreated
+  Bean
 } from "./types/schema"
 import { getGovernanceEntity, getOrCreateDelegate, getOrCreateAccount } from './utils/helpers';
 import { BIGINT_ONE, BIGINT_ZERO, ZERO_ADDRESS } from './utils/constants';
@@ -30,7 +30,7 @@ import { BIGINT_ONE, BIGINT_ZERO, ZERO_ADDRESS } from './utils/constants';
 export function handleAuctionCreated(event: AuctionCreatedEvent): void {
   let beanId = event.params.nounId.toString();
 
-  let bean = BeanCreated.load(beanId);
+  let bean = Bean.load(beanId);
   if (bean == null) {
 
     return;

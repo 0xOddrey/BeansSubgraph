@@ -1,3 +1,4 @@
+import { log } from '@graphprotocol/graph-ts'
 import {
   Approval as ApprovalEvent,
   ApprovalForAll as ApprovalForAllEvent,
@@ -30,7 +31,8 @@ import {
   OgBeanMinted,
   SeederLocked,
   SeederUpdated,
-  Transfer
+  Transfer,
+  Bean
 } from "./types/schema"
 import { BIGINT_ONE, BIGINT_ZERO, ZERO_ADDRESS } from './utils/constants';
 import { getGovernanceEntity, getOrCreateDelegate, getOrCreateAccount } from './utils/helpers';
@@ -64,13 +66,20 @@ export function handleBeanBurned(event: BeanBurnedEvent): void {
   entity.save()
 }
 
+
 export function handleBeanCreated(event: BeanCreatedEvent): void {
-  let entity = new BeanCreated(
-    event.transaction.hash.toHex() + "-" + event.logIndex.toString()
-  )
-  entity.tokenId = event.params.tokenId
-  entity.typeRef = event.params.typeRef
-  entity.save()
+  let nounId = event.params.tokenId.toString();
+
+  let noun = Bean.load(nounId);
+  if (noun == null) {
+    log.error('[handleNounCreated] Noun #{} not found. Hash: {}', [
+      nounId,
+      event.transaction.hash.toHex(),
+    ]);
+    return;
+  }
+
+  noun.save();
 }
 
 
@@ -110,18 +119,27 @@ export function handleBeanteamDAOUpdated(event: BeanteamDAOUpdatedEvent): void {
 }
 
 
+export function handleDelegateVotesChanged(event: DelegateVotesChangedEvent): void {
+  let governance = getGovernanceEntity();
+  let delegate = getOrCreateDelegate(event.params.delegate.toHexString());
+  let votesDifference = event.params.newBalance - event.params.previousBalance;
 
-export function handleDelegateVotesChanged(
-  event: DelegateVotesChangedEvent
-): void {
-  let entity = new DelegateVotesChanged(
-    event.transaction.hash.toHex() + "-" + event.logIndex.toString()
-  )
-  entity.delegate = event.params.delegate
-  entity.previousBalance = event.params.previousBalance
-  entity.newBalance = event.params.newBalance
-  entity.save()
+  delegate.delegatedVotesRaw = event.params.newBalance;
+  delegate.delegatedVotes = event.params.newBalance;
+  delegate.save();
+
+  if (event.params.previousBalance == BIGINT_ZERO && event.params.newBalance > BIGINT_ZERO) {
+    governance.currentDelegates = governance.currentDelegates + BIGINT_ONE;
+  }
+  if (event.params.newBalance == BIGINT_ZERO) {
+    governance.currentDelegates = governance.currentDelegates - BIGINT_ONE;
+  }
+  governance.delegatedVotesRaw = governance.delegatedVotesRaw + votesDifference;
+  governance.delegatedVotes = governance.delegatedVotesRaw;
+  governance.save();
 }
+
+
 
 export function handleDescriptorLocked(event: DescriptorLockedEvent): void {
   let entity = new DescriptorLocked(
@@ -182,6 +200,7 @@ export function handleSeederUpdated(event: SeederUpdatedEvent): void {
 }
 
 let transferredNounId: string; // Use WebAssembly global due to lack of closure support
+
 export function handleTransfer(event: TransferEvent): void {
   let fromHolder = getOrCreateAccount(event.params.from.toHexString());
   let toHolder = getOrCreateAccount(event.params.to.toHexString());
@@ -198,6 +217,28 @@ export function handleTransfer(event: TransferEvent): void {
     fromHolder.tokenBalance = fromHolder.tokenBalanceRaw;
     let fromHolderNouns = fromHolder.beans; // Re-assignment required to update array
     fromHolder.beans = fromHolderNouns.filter(n => n !== transferredNounId);
+
+
+
+    if (fromHolder.tokenBalanceRaw < BIGINT_ZERO) {
+      log.error('Negative balance on holder {} with balance {}', [
+        fromHolder.id,
+        fromHolder.tokenBalanceRaw.toString(),
+      ]);
+    }
+
+    if (fromHolder.tokenBalanceRaw == BIGINT_ZERO && fromHolderPreviousBalance > BIGINT_ZERO) {
+      governance.currentTokenHolders = governance.currentTokenHolders - BIGINT_ONE;
+      governance.save();
+
+      fromHolder.delegate = null;
+    } else if (
+      fromHolder.tokenBalanceRaw > BIGINT_ZERO &&
+      fromHolderPreviousBalance == BIGINT_ZERO
+    ) {
+      governance.currentTokenHolders = governance.currentTokenHolders + BIGINT_ONE;
+      governance.save();
+    }
 
     fromHolder.save();
   }
@@ -233,9 +274,9 @@ export function handleTransfer(event: TransferEvent): void {
     toHolder.delegate = toHolder.id;
   }
 
-  let noun = BeanCreated.load(transferredNounId);
+  let noun = Bean.load(transferredNounId);
   if (noun == null) {
-    noun = new BeanCreated(transferredNounId);
+    noun = new Bean(transferredNounId);
   }
 
   noun.owner = toHolder.id;

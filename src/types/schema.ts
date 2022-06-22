@@ -187,7 +187,6 @@ export class BeanCreated extends Entity {
 
     this.set("tokenId", Value.fromBigInt(BigInt.zero()));
     this.set("typeRef", Value.fromString(""));
-    this.set("owner", Value.fromString(""));
   }
 
   save(): void {
@@ -204,6 +203,60 @@ export class BeanCreated extends Entity {
 
   static load(id: string): BeanCreated | null {
     return changetype<BeanCreated | null>(store.get("BeanCreated", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get tokenId(): BigInt {
+    let value = this.get("tokenId");
+    return value!.toBigInt();
+  }
+
+  set tokenId(value: BigInt) {
+    this.set("tokenId", Value.fromBigInt(value));
+  }
+
+  get typeRef(): string {
+    let value = this.get("typeRef");
+    return value!.toString();
+  }
+
+  set typeRef(value: string) {
+    this.set("typeRef", Value.fromString(value));
+  }
+}
+
+export class Bean extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+
+    this.set("tokenId", Value.fromBigInt(BigInt.zero()));
+    this.set("typeRef", Value.fromString(""));
+    this.set("owner", Value.fromString(""));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save Bean entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type Bean must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("Bean", id.toString(), this);
+    }
+  }
+
+  static load(id: string): Bean | null {
+    return changetype<Bean | null>(store.get("Bean", id));
   }
 
   get id(): string {

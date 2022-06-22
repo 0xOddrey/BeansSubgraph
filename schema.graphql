@@ -22,6 +22,13 @@ type BeanCreated @entity {
   tokenId: BigInt! # uint256
   typeRef: String! # string
   
+}
+
+type Bean @entity {
+  id: ID!
+  tokenId: BigInt! # uint256
+  typeRef: String! # string
+  
   "The owner of the Noun"
   owner: Account!
 
@@ -49,7 +56,7 @@ type Account @entity {
   totalTokensHeld: BigInt!
 
   "The Nouns owned by this account"
-  beans: [BeanCreated!]!
+  beans: [Bean!]!
 }
 
 type Bid @entity {
@@ -57,7 +64,7 @@ type Bid @entity {
   id: ID!
 
   "The Noun being bid on"
-  bean: BeanCreated!
+  bean: Bean!
 
   "Bid amount"
   amount: BigInt!
@@ -83,7 +90,7 @@ type Auction @entity {
   id: ID!
 
   "The Noun"
-  bean: BeanCreated!
+  bean: Bean!
 
   "The current highest bid amount"
   amount: BigInt!
@@ -126,7 +133,7 @@ type Delegate @entity {
   tokenHoldersRepresented: [Account!]! @derivedFrom(field: "delegate")
 
   "Nouns that this delegate represents"
-  nounsRepresented: [BeanCreated!]!
+  nounsRepresented: [Bean!]!
 
   "Votes that a delegate has made in different proposals"
   votes: [Vote!]! @derivedFrom(field: "voter")
@@ -212,7 +219,7 @@ type Vote @entity {
   voter: Delegate!
 
   "The Nouns used to vote"
-  nouns: [BeanCreated!]
+  nouns: [Bean!]
 
   "Proposal that is being voted on"
   proposal: Proposal!
